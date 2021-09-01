@@ -1,18 +1,28 @@
-import { Dice, DiceRoll } from 'fdw-dice';
+import Character from './Character/Character';
+import CharacterHandler from './Character/CharacterHandler';
+import CharacterAbilities from './Character/CharacterAbilities';
+import AbstractCharacterDecorator from './Character/AbstractCharacterDecorator';
+import Races from './Character/Races';
+import Classes from './Character/Classes';
 
-function getBestScore(roll: DiceRoll): number {
-  roll.diceValues.sort();
-  roll.diceValues.shift();
-  return roll.diceValues.reduce((total: number, current: number): number => total + current, 0);
-}
+const character = new Character({
+  name: 'test',
+  race: Races.elf,
+  characterClasses: [Classes.test],
+  level: [1],
+  experiencePoints: 0,
+  ...CharacterAbilities.random({ from: Races.elf.abilities, bestOf: 10 }),
+});
 
-function* attributeGenerator(count: number = 1): Generator<number[], never, number> {
-  const dice = new Dice('4d6');
-  while (true) {
-    yield [...Array(count)].map((val: any) => getBestScore(dice.roll()));
+class Decorator extends AbstractCharacterDecorator {
+  getArmorClass(modifier: number): number {
+    return this.target.getArmorClass(modifier) + 2;
   }
 }
 
-const gen = attributeGenerator(6);
+const characterHandler = new CharacterHandler(character);
 
-console.log(gen.next().value);
+characterHandler.addDecorator(new Decorator(character));
+
+console.log('armor class', characterHandler.armorClass);
+console.log('armor class', character.getArmorClass(characterHandler.abilities.dexterity.modifier));

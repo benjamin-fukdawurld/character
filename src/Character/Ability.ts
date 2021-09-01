@@ -1,4 +1,4 @@
-export default class Attribute {
+export default class Ability {
   private mValue: number = 1;
 
   constructor(value: number = 1) {
@@ -14,6 +14,10 @@ export default class Attribute {
   }
 
   get modifier(): number {
-    return Math.floor((this.mValue - 10) / 2);
+    return Ability.getModifier(this.mValue);
+  }
+
+  static getModifier(ability: number): number {
+    return Math.floor((ability - 10) / 2);
   }
 }

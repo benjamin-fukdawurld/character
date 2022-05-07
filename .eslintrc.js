@@ -26,5 +26,6 @@ module.exports = {
         js: 'never',
       },
     ],
+    'no-underscore-dangle': ['error', { allowAfterThis: true }],
   },
 };

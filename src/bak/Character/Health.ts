@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { Dice } from 'fdw-dice';
+import { Dice } from '@benjamin_fdw/dice';
 import Ability from './Ability';
 
 interface HealthOptions {

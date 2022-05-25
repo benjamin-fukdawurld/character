@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { DiceRoll, DiceSetRoll, DiceSet } from 'fdw-dice';
+import { DiceRoll, DiceSetRoll, DiceSet } from '@benjamin_fdw/dice';
 
 import { Abilities } from '../interfaces/Abilities';
 import Ability from './Ability';

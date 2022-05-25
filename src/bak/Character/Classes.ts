@@ -1,4 +1,4 @@
-import { Dice } from 'fdw-dice';
+import { Dice } from '@benjamin_fdw/dice';
 
 const test = {
   name: 'test',

@@ -1,4 +1,4 @@
-import { Dice } from 'fdw-dice';
+import { Dice } from '@benjamin_fdw/dice';
 import { Proficiency } from './Proficiency';
 import { Skill } from './Skill';
 import CharacterHandler from '../Character/CharacterHandler';

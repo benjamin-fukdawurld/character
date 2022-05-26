@@ -1,26 +1,34 @@
 {
-  "name": "@fdw/character",
+  "name": "@benjamin_fdw/character",
   "version": "1.0.0",
   "description": "Character utils for D&D5 based game",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "npx tsc",
     "dev": "yarn build && yarn start",
     "watch": "nodemon",
     "start": "node dist/index.js",
-    "test": "yarn build && yarn jest --coverage"
+    "test": "yarn build && yarn jest --coverage",
+    "doc:generate": "npx typedoc --out doc ./src",
+    "doc:publish": "npx gh-pages -d doc"
   },
   "author": "Benjamin Fukdawurld",
   "license": "GPL-3.0-or-later",
   "dependencies": {
-    "fdw-dice": "^1.1.1",
+    "@benjamin_fdw/core": "*",
+    "@benjamin_fdw/dice": "*",
+    "@jest/globals": "^28.1.0",
+    "eventemitter3": "^4.0.7",
     "rxjs": "^7.3.0",
-    "seedrandom": "^3.0.5"
+    "seedrandom": "^3.0.5",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/jest": "^27.0.1",
     "@types/node": "^16.7.1",
     "@types/seedrandom": "^3.0.1",
+    "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^4.29.3",
     "@typescript-eslint/parser": "^4.29.3",
     "eslint": "^7.32.0",

@@ -48,6 +48,10 @@ export default class HealthManager {
     );
   }
 
+  public static fromJSON(json: string): HealthManager {
+    return new HealthManager(JSON.parse(json));
+  }
+
   public get 'hit point max'(): number {
     return this._hitPointsMax;
   }
@@ -97,5 +101,9 @@ export default class HealthManager {
 
   public addDeathSave(value: boolean) {
     this._deathSaves.push(value);
+  }
+
+  public clearDeathSaves(): void {
+    this._deathSaves = [];
   }
 }

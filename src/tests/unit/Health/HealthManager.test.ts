@@ -1,8 +1,11 @@
 import { Dice } from '@benjamin_fdw/dice';
 import { describe, it, expect } from '@jest/globals';
 
-import HealthManager from './HealthManager';
-import { HealthAttributeName, HealthAttributeNames } from './interfaces';
+import HealthManager from '../../../Health/HealthManager';
+import {
+  HealthAttributeName,
+  HealthAttributeNames,
+} from '../../../Health/interfaces';
 
 describe('An HealthManager should manage the health of character', () => {
   describe('HealthManager constructor must behave as follow', () => {
@@ -44,7 +47,7 @@ describe('An HealthManager should manage the health of character', () => {
       expect(
         new HealthManager({ 'hit dice': '1d6', 'hit point max': 20 })[
           'current hit points'
-        ],
+        ].value,
       ).toBe(20);
 
       expect(
@@ -53,7 +56,7 @@ describe('An HealthManager should manage the health of character', () => {
           'constitution bonus': 2,
           'hit point max': 20,
           'current hit points': 19,
-        })['current hit points'],
+        })['current hit points'].rawValue,
       ).toBe(19);
     });
 
@@ -96,6 +99,8 @@ describe('An HealthManager should manage the health of character', () => {
       HealthAttributeNames.forEach((attr: HealthAttributeName) => {
         if (attr === 'hit dice') {
           expect(json[attr]).toEqual(manager['hit dice'].toString());
+        } else if (attr === 'current hit points') {
+          expect(json[attr]).toEqual(manager[attr].value);
         } else {
           expect(json[attr]).toEqual(manager[attr]);
         }
@@ -107,6 +112,8 @@ describe('An HealthManager should manage the health of character', () => {
       HealthAttributeNames.forEach((attr: HealthAttributeName) => {
         if (attr === 'hit dice') {
           expect(mgr[attr].toString()).toEqual(manager['hit dice'].toString());
+        } else if (attr === 'current hit points') {
+          expect(mgr[attr].rawValue).toEqual(manager[attr].rawValue);
         } else {
           expect(mgr[attr]).toEqual(manager[attr]);
         }
@@ -124,15 +131,20 @@ describe('An HealthManager should manage the health of character', () => {
     });
     it('should has a getter for each HealthAttribute with the appropriate value', () => {
       expect(manager['hit dice'].toString()).toBe('1d6');
-      expect(manager['current hit points']).toBe(6);
+      expect(manager['current hit points'].rawValue).toBe(6);
       expect(manager['hit point max']).toBe(7);
       expect(manager['temporary hit points']).toBe(8);
       expect(manager['total hit dice']).toBe(2);
     });
 
     it('it should has a setter for each HealthAttribute except hit dice and death saves', () => {
-      manager['current hit points'] = 8;
-      expect(manager['current hit points']).toBe(8);
+      manager['current hit points'].rawValue = 8;
+      expect(manager['current hit points'].rawValue).toBe(8);
+
+      expect(manager['current hit points'].value).toBe(
+        manager['current hit points'].rawValue +
+          manager['temporary hit points'],
+      );
 
       manager['hit point max'] = 9;
       expect(manager['hit point max']).toBe(9);

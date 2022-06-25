@@ -22,5 +22,13 @@ module.exports = {
     'no-underscore-dangle': ['error', { allowAfterThis: true }],
     'generator-star-spacing': ['error', { before: true, after: false }],
     'no-plusplus': 'off',
+    'no-param-reassign': 'off',
+  },
+  settings: {
+    'import/resolver': {
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+      },
+    },
   },
 };

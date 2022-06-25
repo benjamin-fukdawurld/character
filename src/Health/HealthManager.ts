@@ -1,4 +1,5 @@
 import { Dice } from '@benjamin_fdw/dice';
+import Attribute from '../common/Attribute';
 
 import {
   HealthAttributeName,
@@ -6,10 +7,10 @@ import {
   HealthManagerOptions,
 } from './interfaces';
 
-export default class HealthManager {
+export default class HealthManager<Env = any> {
   private _hitPointsMax: number;
 
-  private _currentHitPoints: number;
+  private _currentHitPoints: Attribute<number, Env>;
 
   private _temporaryHitPoints: number;
 
@@ -28,22 +29,40 @@ export default class HealthManager {
       options['hit point max'] ??
       this._hitDice.max + (options['constitution bonus'] ?? 0);
 
-    this._currentHitPoints =
-      options['current hit points'] ?? this._hitPointsMax;
+    this._currentHitPoints = new Attribute<number, Env>(
+      options['current hit points'] ?? this._hitPointsMax,
+    );
     this._temporaryHitPoints = options['temporary hit points'] ?? 0;
     this._totalHitDice = options['total hit dice'] ?? 1;
     this._deathSaves = [];
+
+    this._currentHitPoints.pipeline.use(
+      (value: number) => value + this._temporaryHitPoints,
+    );
   }
 
   public toJSON(): string {
     return JSON.stringify(
       Object.fromEntries(
-        HealthAttributeNames.map((attribute: HealthAttributeName) => [
-          attribute,
-          attribute === 'hit dice'
-            ? this[attribute].toString()
-            : this[attribute],
-        ]),
+        HealthAttributeNames.map((attribute: HealthAttributeName) => {
+          const value = this[attribute];
+          let result: string | number | undefined;
+          switch (attribute) {
+            case 'hit dice':
+              result = value.toString();
+              break;
+
+            case 'current hit points':
+              result = (value as Attribute<number, Env>).rawValue;
+              break;
+
+            default:
+              result = value as number;
+              break;
+          }
+
+          return [attribute, result];
+        }),
       ),
     );
   }
@@ -64,15 +83,14 @@ export default class HealthManager {
     }
 
     this._hitPointsMax = value;
-    this._currentHitPoints = Math.min(this._currentHitPoints, value);
+    this._currentHitPoints.rawValue = Math.min(
+      this._currentHitPoints.rawValue,
+      value,
+    );
   }
 
-  public get 'current hit points'(): number {
+  public get 'current hit points'(): Attribute<number, Env> {
     return this._currentHitPoints;
-  }
-
-  public set 'current hit points'(value: number) {
-    this._currentHitPoints = value;
   }
 
   public get 'temporary hit points'(): number {

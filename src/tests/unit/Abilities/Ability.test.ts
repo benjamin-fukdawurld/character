@@ -1,42 +1,47 @@
 import { describe, it, expect } from '@jest/globals';
-import Ability from './Ability';
-import { Abilities, AbilityName, AbilityNames } from './interfaces';
-import { toAbilities } from './utils';
+import Ability from '../../../Abilities/Ability';
+import {
+  Abilities,
+  AbilityName,
+  AbilityNames,
+} from '../../../Abilities/interfaces';
+import { toAbilities } from '../../../Abilities/utils';
 
 describe('An Ability contains one of the six main attributes of your character', () => {
   it('should not be greater than 0', () => {
-    let ability = new Ability();
+    const ability = new Ability();
     expect(ability.value).toBeGreaterThan(0);
 
-    ability = new Ability(-1);
-    expect(ability.value).toBeGreaterThan(0);
+    expect(() => new Ability(-1)).toThrow();
 
-    ability.value = 0;
-    expect(ability.value).toBeGreaterThan(0);
+    expect(() => {
+      ability.rawValue = 0;
+    }).toThrow();
 
-    ability.value = -1;
-    expect(ability.value).toBeGreaterThan(0);
+    expect(() => {
+      ability.rawValue = -1;
+    }).toThrow();
   });
 
   it('should not be less than or equal to 30', () => {
-    let ability = new Ability();
+    const ability = new Ability();
     expect(ability.value).toBeLessThanOrEqual(30);
 
-    ability = new Ability(35);
+    expect(() => new Ability(35)).toThrow();
+
+    ability.rawValue = 30;
     expect(ability.value).toBeLessThanOrEqual(30);
 
-    ability.value = 30;
-    expect(ability.value).toBeLessThanOrEqual(30);
-
-    ability.value = 35;
-    expect(ability.value).toBeLessThanOrEqual(30);
+    expect(() => {
+      ability.rawValue = 35;
+    }).toThrow();
   });
 
   it('should take any value in range [1, 30]', () => {
     const ability = new Ability();
     for (let i = 1; i <= 30; ++i) {
       expect(new Ability(i).value).toBe(i);
-      ability.value = i;
+      ability.rawValue = i;
       expect(ability.value).toBe(i);
     }
   });
@@ -45,7 +50,7 @@ describe('An Ability contains one of the six main attributes of your character',
     const ability = new Ability();
     let modifier = 0;
     for (let i = 1; i <= 30; ++i) {
-      ability.value = i;
+      ability.rawValue = i;
       modifier = Math.floor((i - 10) / 2);
       expect(ability.modifier).toBe(modifier);
       expect(Ability.getModifierValue(i)).toBe(modifier);

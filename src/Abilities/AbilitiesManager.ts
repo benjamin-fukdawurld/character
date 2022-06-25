@@ -1,139 +1,67 @@
 import { Dice } from '@benjamin_fdw/dice';
+
 import {
   Abilities,
-  AbilitiesInitializer,
   AbilitiesManagerOptions,
   AbilityName,
   AbilityNames,
-  SkillName,
-  StatName,
-  StatNames,
 } from './interfaces';
-import { getAssociatedAbilityName, isAbilities } from './utils';
 import Ability from './Ability';
 
-export default class AbilitiesManager {
-  private _initiative: number;
+export default class AbilitiesManager implements Abilities<Ability> {
+  private _strength: Ability;
 
-  private _passivePerception: number;
+  private _dexterity: Ability;
 
-  private _speed: number;
+  private _constitution: Ability;
 
-  private _darkVision: number;
+  private _wisdom: Ability;
 
-  private _abilities: Map<AbilityName, Ability>;
+  private _intelligence: Ability;
+
+  private _charisma: Ability;
 
   private _remainingAbilityPoints: number;
 
   public constructor(options: AbilitiesManagerOptions = {}) {
-    this._speed = options.speed ?? 9;
-    this._darkVision = options['dark vision'] ?? 0;
-    this._initiative = options.initiative ?? 0;
-    this._passivePerception = options['passive perception'] ?? 0;
-    this._remainingAbilityPoints = options.remainingAbilityPoints ?? 0;
-
-    this._abilities = AbilitiesManager.parseAbilities(options.abilities);
-  }
-
-  public static fromJSON(json: string): AbilitiesManager {
-    return new AbilitiesManager(JSON.parse(json));
-  }
-
-  public toJSON() {
-    const abilities = Object.fromEntries(
-      AbilityNames.map((ability: AbilityName) => [
-        ability,
-        this.getAbility(ability).value,
-      ]),
-    );
-
-    const stats = Object.fromEntries(
-      StatNames.map((stat: StatName) => [stat, this[stat]]),
-    );
-
-    return JSON.stringify({
-      abilities,
-      ...stats,
-    });
-  }
-
-  public get abilities() {
-    return this._abilities;
+    this._strength = new Ability(options.strength);
+    this._dexterity = new Ability(options.dexterity);
+    this._constitution = new Ability(options.constitution);
+    this._wisdom = new Ability(options.wisdom);
+    this._intelligence = new Ability(options.intelligence);
+    this._charisma = new Ability(options.charisma);
+    this._remainingAbilityPoints = options.remainingPoints ?? 0;
   }
 
   public get strength(): Ability {
-    return this._abilities.get('strength')!;
+    return this._strength;
   }
 
   public get dexterity(): Ability {
-    return this._abilities.get('dexterity')!;
+    return this._dexterity;
   }
 
   public get constitution(): Ability {
-    return this._abilities.get('constitution')!;
-  }
-
-  public get intelligence(): Ability {
-    return this._abilities.get('intelligence')!;
+    return this._constitution;
   }
 
   public get wisdom(): Ability {
-    return this._abilities.get('wisdom')!;
+    return this._wisdom;
+  }
+
+  public get intelligence(): Ability {
+    return this._intelligence;
   }
 
   public get charisma(): Ability {
-    return this._abilities.get('charisma')!;
+    return this._charisma;
   }
 
-  public getAbility(key: AbilityName): Ability {
-    return this._abilities.get(key)!;
-  }
-
-  public getSkillValue(key: SkillName): number {
-    return this._abilities.get(getAssociatedAbilityName(key))!.modifier;
-  }
-
-  public get initiative(): number {
-    return this._initiative;
-  }
-
-  public set initiative(value: number) {
-    this._initiative = value;
-  }
-
-  public get 'passive perception'(): number {
-    return this._passivePerception;
-  }
-
-  public set 'passive perception'(value: number) {
-    this._passivePerception = value;
-  }
-
-  public get speed(): number {
-    return this._speed;
-  }
-
-  public set speed(value: number) {
-    this._speed = value;
-  }
-
-  public get 'armor class'(): number {
-    return 10 + this.dexterity.modifier;
-  }
-
-  public get 'dark vision'(): number {
-    return this._darkVision;
-  }
-
-  public set 'dark vision'(value: number) {
-    this._darkVision = value;
-  }
-
-  public get remainingAbilityPoints(): number {
+  public get 'remaining points'(): number {
     return this._remainingAbilityPoints;
   }
 
-  public set remainingAbilityPoints(value: number) {
+  public set 'remaining points'(value: number) {
     if (value < 0) {
       throw new Error(
         `Cannot set remaining ability points to a negative value (received: ${value})`,
@@ -143,30 +71,40 @@ export default class AbilitiesManager {
     this._remainingAbilityPoints = value;
   }
 
-  private static parseAbilities(
-    abilities?: Abilities | AbilitiesInitializer,
-  ): Map<AbilityName, Ability> {
-    let abilityArray: [AbilityName, Ability][] = [];
+  public getAbility(name: AbilityName): Ability {
+    return this[name];
+  }
 
-    if (isAbilities(abilities)) {
-      abilityArray = AbilityNames.map((name) => [
-        name as AbilityName,
-        new Ability((abilities as Abilities)[name as keyof Abilities]),
-      ]);
-    } else if (typeof abilities === 'function') {
-      const initValue = abilities as AbilitiesInitializer;
-      abilityArray = AbilityNames.map((name) => [
-        name as AbilityName,
-        new Ability(initValue(name as AbilityName)),
-      ]);
-    } else if (!abilities) {
-      abilityArray = AbilityNames.map((name) => [
-        name as AbilityName,
-        new Ability(),
-      ]);
-    }
+  public setAbility(name: AbilityName, value: number): AbilitiesManager {
+    this[name].rawValue = value;
 
-    return new Map<AbilityName, Ability>(abilityArray);
+    return this;
+  }
+
+  public setAbilities(abilities: Abilities<number>) {
+    AbilityNames.map((ability: AbilityName) =>
+      this.setAbility(ability, abilities[ability]),
+    );
+  }
+
+  public getModifier(name: AbilityName): number {
+    return this[name].modifier;
+  }
+
+  public static fromJSON(json: string): AbilitiesManager {
+    return new AbilitiesManager(JSON.parse(json));
+  }
+
+  public toJSON() {
+    return JSON.stringify(
+      Object.fromEntries([
+        ...AbilityNames.map((ability: AbilityName) => [
+          ability,
+          this[ability].rawValue,
+        ]),
+        ['remaining points', this._remainingAbilityPoints],
+      ]),
+    );
   }
 
   public static rollAbilityPoints(): number {

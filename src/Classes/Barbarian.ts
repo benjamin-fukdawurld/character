@@ -1,50 +1,23 @@
-import { CharacterOptions } from '../Character';
+import { ClassOptions } from './interfaces';
+import Class from './Class';
+import { IBaseCharacter } from '../Character';
 
-export function AbilitySavingThrow(value: number = 1) {
-  const mw = (current: number) => current + value;
-  mw.priority = 0;
+const BarbarianClassOptions: ClassOptions = {
+  'hit dice': '1d12',
+  name: 'barbarian',
+  feats: [
+    'saving throw bonus for strength',
+    'saving throw bonus for constitution',
+    'proficiency bonus for shields',
+    'proficiency bonus for light armor',
+    'proficiency bonus for medium armor',
+    'proficiency bonus for simple weapon',
+    'proficiency bonus for martial weapon',
+    'choose to skills for barbarian',
+  ],
 
-  return mw;
-}
+  levelUp: (value: IBaseCharacter) => value,
+};
 
-export function buildBarbarianMiddleWare(
-  level: number,
-  experience: number,
-  skills: string[],
-  equipment: Map<string, any>,
-  features: Map<string, any>,
-) {
-  const mw = (options: CharacterOptions) => {
-    const result = options;
-
-    result.info.classes.push({ name: 'barbarian', level });
-    result.info.experience = experience;
-    result.health['hit dice'] = '1d12';
-
-    result.proficiencies.set('light armors', 1);
-    result.proficiencies.set('medium armors', 1);
-    result.proficiencies.set('shields', 1);
-    result.proficiencies.set('simple weapons', 1);
-    result.proficiencies.set('martial weapons', 1);
-
-    if (!result.savingThrowPipelines.has('strength')) {
-      result.savingThrowPipelines.set('strength', []);
-    }
-    result.savingThrowPipelines.get('strength')!.push(AbilitySavingThrow());
-
-    if (!result.savingThrowPipelines.has('constitution')) {
-      result.savingThrowPipelines.set('constitution', []);
-    }
-    result.savingThrowPipelines.get('constitution')!.push(AbilitySavingThrow());
-
-    skills.forEach((skill: string) => result.skills.set(skill, skill));
-    equipment.forEach((item, slot) => result.equipment.set(slot, item));
-    features.forEach((feature, name) => result.features.set(name, feature));
-
-    return result;
-  };
-
-  mw.priority = 1;
-
-  return mw;
-}
+const BarbarianClass = new Class(BarbarianClassOptions);
+export default BarbarianClass;

@@ -1,18 +1,30 @@
 import {
   AbilityName,
   SkillName,
+  StatName,
   AbilityNames,
   SkillNames,
   Abilities,
   AbilitiesInitializer,
+  StatNames,
 } from './interfaces';
 
-export function getAssociatedAbilityName(name: SkillName): AbilityName {
+export function getAssociatedAbilityName(
+  name: SkillName | StatName,
+): AbilityName {
   if (name === 'athletics') {
     return 'strength';
   }
 
-  if (['acrobatics', 'sleight of hand', 'stealth'].includes(name)) {
+  if (
+    [
+      'acrobatics',
+      'sleight of hand',
+      'stealth',
+      'armor class',
+      'initiative',
+    ].includes(name)
+  ) {
     return 'dexterity';
   }
 
@@ -29,6 +41,7 @@ export function getAssociatedAbilityName(name: SkillName): AbilityName {
       'medicine',
       'perception',
       'survival',
+      'passive perception',
     ].includes(name)
   ) {
     return 'wisdom';
@@ -54,6 +67,13 @@ export function isSkillName(prop: any): prop is SkillName {
   return (
     typeof prop === 'string' &&
     (SkillNames as readonly SkillName[]).includes(prop as SkillName)
+  );
+}
+
+export function isStatName(prop: any): prop is StatName {
+  return (
+    typeof prop === 'string' &&
+    (StatNames as readonly StatName[]).includes(prop as StatName)
   );
 }
 

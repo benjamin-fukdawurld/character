@@ -1,30 +1,23 @@
+import { Pipeline } from '@benjamin_fdw/core';
 import EventEmitter from 'eventemitter3';
 import { v4 as uuid } from 'uuid';
 
-import { Pipeline } from '@benjamin_fdw/core';
-
 import {
+  Abilities,
+  AbilitiesManager,
   AbilityName,
   AbilityNames,
-  SkillName,
-  SkillNames,
-  AbilitiesManager,
-  StatNames,
-  StatName,
 } from '../Abilities';
 
 import {
   CharacterAttributeName,
-  CharacterInformation,
   CharacterOptions,
   CharacterEventNames,
   ICharacter,
 } from './interfaces';
-import {
-  HealthAttributeName,
-  HealthAttributeNames,
-  HealthManager,
-} from '../Health';
+import { HealthManager } from '../Health';
+import InfoManager from '../Info/InfoManager';
+import AttributeManager from './AttributeManager';
 
 export default class Character
   extends EventEmitter<CharacterEventNames, Character>
@@ -32,80 +25,57 @@ export default class Character
 {
   public readonly id: string;
 
-  public _info: CharacterInformation;
-
-  public _healthManager: HealthManager;
-
-  private _abilitiesManager: AbilitiesManager;
-
-  private _attributesPipelines: Map<
-    CharacterAttributeName,
-    Pipeline<any, Character>
-  >;
-
-  private _savingThrows: Map<string, number>;
-
-  private _savingThrowsPipelines: Map<string, Pipeline<number, Character>>;
+  private _attributeMgr: AttributeManager<Character>;
 
   public constructor(options: CharacterOptions) {
     super();
     this.id = options.id ?? uuid();
-    this._info = options.info;
-    this._abilitiesManager = new AbilitiesManager(options.abilities);
-    this._healthManager = new HealthManager(options.health);
-    this._attributesPipelines = new Map<
-      CharacterAttributeName,
-      Pipeline<any, Character>
-    >();
-
-    this._savingThrows = new Map<string, number>();
-    this._savingThrowsPipelines = new Map<
-      string,
-      Pipeline<number, Character>
-    >();
+    this._attributeMgr = new AttributeManager({
+      infoManager: new InfoManager(options),
+      abilitiesManager: new AbilitiesManager(options),
+      healthManager: new HealthManager(options),
+    });
   }
 
-  public get info(): CharacterInformation {
-    return this._info;
+  public get infoManager(): InfoManager {
+    return this._attributeMgr.infoManager;
   }
 
   public get abilitiesManager(): AbilitiesManager {
-    return this._abilitiesManager;
+    return this._attributeMgr.abilitiesManager;
+  }
+
+  public get healthManager(): HealthManager {
+    return this._attributeMgr.healthManager;
+  }
+
+  public get pipelines(): Map<
+    CharacterAttributeName,
+    Pipeline<any, Character>
+  > {
+    return this._attributeMgr.pipelines;
   }
 
   public getAttribute<T = any>(attribute: CharacterAttributeName): T | null {
-    if ((AbilityNames as readonly string[]).includes(attribute)) {
-      const abilityValue = this._abilitiesManager.getAbility(
-        attribute as AbilityName,
-      ).value;
-      return (this._attributesPipelines.get(attribute)?.get(abilityValue) ??
-        abilityValue) as T;
-    }
-
-    if ((SkillNames as readonly string[]).includes(attribute)) {
-      const skillValue = this._abilitiesManager.getSkillValue(
-        attribute as SkillName,
-      );
-      return (this._attributesPipelines.get(attribute)?.get(skillValue) ??
-        skillValue) as T;
-    }
-
-    if ((StatNames as readonly string[]).includes(attribute)) {
-      const stateValue = this._abilitiesManager[attribute as StatName];
-      return (this._attributesPipelines.get(attribute)?.get(stateValue) ??
-        stateValue) as T;
-    }
-
-    if ((HealthAttributeNames as readonly string[]).includes(attribute)) {
-      const healthValue = this._healthManager[attribute as HealthAttributeName];
-      return (this._attributesPipelines.get(attribute)?.get(healthValue) ??
-        healthValue) as T;
-    }
-
-    return null;
+    return this._attributeMgr.getAttribute(attribute);
   }
 
-  public get isAlive(): boolean {
-    return this.id !== '';
+  public getSavingThrow(name: string, value: number): number {
+    return this._attributeMgr.getSavingThrowPipeline(name)?.get(value) ?? value;
+  }
+
+  public get abilities(): Abilities {
+    return Object.fromEntries(
+      AbilityNames.map((name: AbilityName) => [
+        name,
+        this.getAttribute<number>(name),
+      ]),
+    ) as Abilities;
+  }
+
+  public set abilities(value: Abilities) {
+    AbilityNames.forEach((name: AbilityName) => {
+      this._attributeMgr.abilitiesManager[name].rawValue = value[name];
+    });
   }
 }

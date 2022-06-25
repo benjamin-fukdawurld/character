@@ -1,13 +1,16 @@
 import { MiddleWare } from '@benjamin_fdw/core';
 import EventEmitter from 'eventemitter3';
 import {
+  Abilities,
   AbilitiesManagerOptions,
+  AbilityModifierName,
   AbilityName,
   SkillName,
   StatName,
 } from '../Abilities';
 
 import { HealthAttributeName, HealthManagerOptions } from '../Health';
+import { InfoAttributeName, InfoManagerOptions } from '../Info/interfaces';
 
 export interface CharacterEvent {
   name: string;
@@ -15,9 +18,11 @@ export interface CharacterEvent {
 
 export type CharacterAttributeName =
   | AbilityName
+  | AbilityModifierName
   | SkillName
   | StatName
-  | HealthAttributeName;
+  | HealthAttributeName
+  | InfoAttributeName;
 
 export type CharacterEventNames = 'combat engaged' | 'surprised' | 'attacked';
 
@@ -33,15 +38,18 @@ export interface CharacterInformation {
   longRestDuration: number;
 }
 
-export interface CharacterOptions {
+export interface CharacterOptions
+  extends InfoManagerOptions,
+    HealthManagerOptions,
+    AbilitiesManagerOptions {
   id?: string;
-  info: CharacterInformation;
-  health: HealthManagerOptions;
-  abilities: AbilitiesManagerOptions;
   savingThrows: Map<string, number>;
   savingThrowPipelines: Map<string, MiddleWare<number, any>[]>;
   proficiencies: Map<string, number>;
   proficiencyPipelines: Map<string, MiddleWare<number, any>[]>;
+
+  speed: number;
+  'dark vision': number;
 
   skills: Map<string, any>;
   features: Map<string, any>;
@@ -51,10 +59,10 @@ export interface CharacterOptions {
 
 export interface IBaseCharacter {
   readonly id: string;
-  readonly info: CharacterInformation;
   readonly getAttribute: <T = any>(
     attribute: CharacterAttributeName,
   ) => T | null;
+  abilities: Abilities;
 }
 
 export type ICharacter = IBaseCharacter &

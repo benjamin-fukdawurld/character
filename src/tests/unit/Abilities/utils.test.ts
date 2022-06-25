@@ -6,14 +6,14 @@ import {
   AbilityNames,
   AbilityName,
   Abilities,
-} from './interfaces';
+} from '../../../Abilities/interfaces';
 
 import {
   getAssociatedAbilityName,
   isAbilityName,
   isSkillName,
   isAbilities,
-} from './utils';
+} from '../../../Abilities/utils';
 
 describe('associated ability names', () => {
   it('should return an ability for each skill', () => {

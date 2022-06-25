@@ -1,44 +1,58 @@
-export type AlignmentLaw = 'chaotic' | 'neutral' | 'lawful';
-export type AlignmentMoral = 'evil' | 'neutral' | 'good';
+import {
+  Alignment,
+  AlignmentLaw,
+  AlignmentMoral,
+  AlignmentShort,
+  AlignmentShorts,
+} from './interfaces';
 
-export type AlignmentShort = 'CE' | 'CN' | 'CG' | 'NE' | 'N' | 'NG' | 'LE' | 'LN' | 'LG';
+function parseAlignmentShort(str: AlignmentShort): Alignment {
+  const getLaw = (short: AlignmentShort): AlignmentLaw | undefined => {
+    switch (short[0]) {
+      case 'C':
+        return 'chaotic';
+      case 'L':
+        return 'lawful';
+      case 'N':
+        return 'neutral';
 
-export interface Alignment {
-  law: AlignmentLaw;
-  moral: AlignmentMoral;
-}
+      default:
+        return undefined;
+    }
+  };
 
-export function parseAlignmentShort(str: AlignmentShort): Alignment {
-  if (str.length === 1) {
-    return { law: 'neutral', moral: 'neutral' };
-  }
+  const getMoral = (short: AlignmentShort): AlignmentMoral | undefined => {
+    if (short === 'N') {
+      return 'neutral';
+    }
 
-  let law: AlignmentLaw | undefined;
-  let moral: AlignmentMoral | undefined;
+    switch (short[1]) {
+      case 'E':
+        return 'evil';
+      case 'G':
+        return 'good';
+      case 'N':
+        return 'neutral';
 
-  if (str[0] === 'C') {
-    law = 'chaotic';
-  } else if (str[0] === 'N') {
-    law = 'neutral';
-  } else if (str[0] === 'L') {
-    law = 'lawful';
-  }
+      default:
+        return undefined;
+    }
+  };
 
-  if (!law) {
-    throw new Error(`Patter '${str}' as no law alignment`);
-  }
+  const law = getLaw(str);
+  const moral = getMoral(str);
 
-  if (str[1] === 'E') {
-    moral = 'evil';
-  } else if (str[1] === 'N') {
-    moral = 'neutral';
-  } else if (str[1] === 'G') {
-    moral = 'good';
-  }
-
-  if (!moral) {
-    throw new Error(`Patter '${str}' as no moral alignment`);
+  if (!law || !moral) {
+    throw new Error(
+      `Pattern '${str}' is not a law short (expected: on of ${JSON.stringify(
+        AlignmentShorts,
+        null,
+        2,
+      )})`,
+    );
   }
 
   return { law, moral };
 }
+
+export { parseAlignmentShort };

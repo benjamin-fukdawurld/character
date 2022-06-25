@@ -1,40 +1,29 @@
-import { Dice } from '@benjamin_fdw/dice';
-import { Abilities } from '../Abilities';
-import { CharacterOptions } from '../Character';
+import { RaceOptions } from './interfaces';
 
-export function AdvantageMiddleWare(dice: string | Dice = '1d20') {
-  const d = typeof dice === 'string' ? new Dice(dice) : dice;
+import Race from './Race';
 
-  const mw = (value: number) => Math.max(value, d.roll().total);
-  mw.priority = 0;
+const ElfRaceOptions: RaceOptions = {
+  name: 'elf',
+  'size label': 'm',
+  'size range': { min: 1.5, max: 1.8 },
+  speed: 9,
+  'dark vision': 18,
+  'long rest duration': 4,
+  abilities: {
+    strength: 0,
+    dexterity: 2,
+    constitution: 0,
+    intelligence: 0,
+    wisdom: 0,
+    charisma: 0,
+  },
+  languages: ['common', 'elvish'],
+  feats: [
+    'resist to sleep',
+    'advantage against charm',
+    'proficiency in perception',
+  ],
+};
 
-  return mw;
-}
-
-export function buildElfMiddleWare() {
-  const mw = (options: CharacterOptions) => {
-    const result = options;
-
-    result.info.races.push('elf');
-    result.info.longRestDuration = 4;
-    result.info.size = 'm';
-
-    result.abilities.speed = 9;
-    result.abilities['dark vision'] = 18;
-
-    (result.abilities.abilities as Abilities).dexterity += 2;
-
-    result.savingThrows.set('sleep', 30);
-
-    if (!result.savingThrowPipelines.has('charm')) {
-      result.savingThrowPipelines.set('charm', []);
-    }
-    result.savingThrowPipelines.get('charm')!.push(AdvantageMiddleWare());
-
-    return result;
-  };
-
-  mw.priority = 0;
-
-  return mw;
-}
+const ElfRace = new Race(ElfRaceOptions);
+export default ElfRace;

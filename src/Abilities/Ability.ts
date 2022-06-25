@@ -1,20 +1,33 @@
-export default class Ability {
+import Attribute from '../common/Attribute';
+
+export default class Ability<Env = any> extends Attribute<number, Env> {
   public static readonly MinValue: number = 1;
 
   public static readonly MaxValue: number = 30;
 
-  private _value: number = 1;
+  public static ModifierProxy = <E = any>(attr: Attribute<number, E>) =>
+    (attr as Ability).modifier;
 
   public constructor(value: number = 1) {
-    this.value = value;
+    if (value < 1 || value > 30) {
+      throw new Error(
+        `Cannot set ability value: out of range (expected value in range [${Ability.MinValue}, ${Ability.MaxValue}], received: ${value}`,
+      );
+    }
+    super(value);
   }
 
-  public get value(): number {
-    return this._value;
+  public get rawValue(): number {
+    return super.rawValue;
   }
 
-  public set value(value) {
-    this._value = Math.max(Ability.MinValue, Math.min(Ability.MaxValue, value));
+  public set rawValue(value: number) {
+    if (value < Ability.MinValue || value > Ability.MaxValue) {
+      throw new Error(
+        `Cannot set ability value: out of range (expected value in range [${Ability.MinValue}, ${Ability.MaxValue}], received: ${value}`,
+      );
+    }
+    super.rawValue = value;
   }
 
   public get modifier(): number {
